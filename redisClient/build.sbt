@@ -9,9 +9,10 @@ resolvers += (
 )
 
 libraryDependencies ++= Seq(
-  javaJdbc,
-  cache,
-  javaWs
+//  "redis.clients" % "jedis" % "2.7.2",
+  "biz.paluch.redis" % "lettuce" % "3.2.Final",
+  "javax.inject" % "javax.inject" % "1",
+  "com.google.inject.extensions" % "guice-assistedinject" % "4.0"
 )
 
 // Play provides two styles of routers, one expects its actions to be injected, the
