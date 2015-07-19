@@ -5,7 +5,6 @@ import redis.ChannelMessage;
 import redis.RedisTool;
 
 public class PublisherActor extends BaseActor {
-    public static final String NAME = "publisher-actor";
 
     @Override
     public void postStop() throws Exception {
