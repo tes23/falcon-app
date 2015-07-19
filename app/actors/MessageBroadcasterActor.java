@@ -30,8 +30,8 @@ public class MessageBroadcasterActor extends UntypedActor {
             System.out.println("New client is arrived with id:" + ((RegistrationMessage) message).id + ", available clients:" + clients.size());
         } else if(message instanceof ChannelMessage) {
             ChannelMessage channelMessage = (ChannelMessage) message;
-            clients.forEach((id, channel) -> channel.write(channelMessage.getName()));
-            System.out.println("Message sent to clients:" + channelMessage.getName() + ", available clients:" + clients.size());
+            clients.forEach((id, channel) -> channel.write(channelMessage.getMessage()));
+            System.out.println("Message sent to clients:" + channelMessage.getMessage() + ", available clients:" + clients.size());
         } else if(message instanceof UnRegistrationMessage) {
             UnRegistrationMessage unRegMessage = (UnRegistrationMessage) message;
             clients.remove(unRegMessage.id);

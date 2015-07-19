@@ -9,6 +9,7 @@ import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
+import redis.ChannelMessage;
 import views.html.*;
 
 import javax.inject.Inject;
@@ -22,7 +23,7 @@ import static actors.ConsumerActorProtocol.ActorNamePath.*;
 public class UpdaterController extends Controller {
 
     @Inject @Named(CONSUMER)
-    private ActorRef actorRef;
+    private ActorRef consumerActor;
 
     public Result index() {
         return ok(index.render());
@@ -43,35 +44,33 @@ public class UpdaterController extends Controller {
                 }, null
         );*/
 
+        ChannelMessage message = new ChannelMessage(jsonNode.toString());
+        consumerActor.tell(message, null);
+//        return F.Promise.wrap(Patterns.ask(actorRef, message, 30000)).map(response -> ok((String) response));
         return ok("Message received!");
     }
 
     public F.Promise<Result> sayhello(String name) {
-        ConsumerActorProtocol.Message message = new ConsumerActorProtocol.Message(name);
+        ChannelMessage message = new ChannelMessage(name);
 
-        //TODO: here we should use tell, which means we don't want to wait for any answer
-        return F.Promise.wrap(Patterns.ask(actorRef, message, 30000)).map(response -> ok((String) response));
+        return F.Promise.wrap(Patterns.ask(consumerActor, message, 30000)).map(response -> ok((String) response));
     }
 
-    // get the ws.js script
+    /** Get the ws.js script */
     public Result wsJs() {
         return ok(views.js.ws.render());
     }
 
-    // Websocket interface
+    /** Websocket interface */
     public WebSocket<String> wsInterface(){
-        return new WebSocket<String>() {
-
-            @Override
-            public void onReady(In<String> in, Out<String> out) {
-                try {
-                    MessageBroadcasterActor.registerClient(UUID.randomUUID().toString(), in, out);
-                } catch (Exception e) {
-                    //TODO handle exceptions
-                    e.printStackTrace();
-                    out.close();
-                }
+        return WebSocket.whenReady((in, out) -> {
+            try {
+                MessageBroadcasterActor.registerClient(UUID.randomUUID().toString(), in, out);
+            } catch (Exception e) {
+                //TODO handle exceptions
+                e.printStackTrace();
+                out.close();
             }
-        };
+        });
     }
 }

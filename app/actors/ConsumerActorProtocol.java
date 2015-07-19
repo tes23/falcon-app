@@ -4,14 +4,6 @@ import akka.actor.Actor;
 
 public class ConsumerActorProtocol {
 
-    public static class Message {
-        public String name;
-
-        public Message(String name) {
-            this.name = name;
-        }
-    }
-
     public interface PublisherFactory {
         Actor create();
     }

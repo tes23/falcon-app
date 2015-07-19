@@ -1,17 +1,17 @@
 package redis;
 
 public class ChannelMessage {
-    private String name;
+    private String message;
 
-    public ChannelMessage(String name) {
-        this.name = name;
+    public ChannelMessage(String message) {
+        this.message = message;
     }
 
-    public String getName() {
-        return name;
+    public String getMessage() {
+        return message;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

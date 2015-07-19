@@ -13,8 +13,9 @@ public class GuiceModule extends AbstractModule implements AkkaGuiceSupport {
         bindActorFactory(SubscriberActor.class, ConsumerActorProtocol.SubscriberFactory.class);
         bindActorFactory(MessageBroadcasterActor.class, ConsumerActorProtocol.MessageBroadcasterFactory.class);
 
-        install(new FactoryModuleBuilder().implement(RedisTool.class, RedisToolImpl.class).build(RedisToolFactory.class));
+//        install(new FactoryModuleBuilder().implement(RedisTool.class, RedisToolImpl.class).build(RedisToolFactory.class));
 
+        bind(RedisTool.class).to(RedisToolImpl.class);
         bind(RedisConnectionPool.class).to(RedisConnectionPoolImpl.class);
     }
 }

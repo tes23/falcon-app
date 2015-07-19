@@ -17,7 +17,7 @@ public class PublisherActor extends BaseActor {
         System.out.println(this.getClass().getSimpleName() + " is called");
 
         if (message instanceof ChannelMessage) {
-            final String name = ((ChannelMessage) message).getName();
+            final String name = ((ChannelMessage) message).getMessage();
             System.out.println("Received name: " + name);
 
             RedisTool redisTool = obtainRedisTool();

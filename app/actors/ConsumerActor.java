@@ -69,14 +69,12 @@ public class ConsumerActor extends BaseActor implements InjectedActorSupport{
     public void onReceive(Object message) throws Exception {
         logger.info("Received command:" + message);
 
-        if(message instanceof ConsumerActorProtocol.Message) {
-            ConsumerActorProtocol.Message protocolMessage = (ConsumerActorProtocol.Message) message;
-
-            ChannelMessage channelMessage = new ChannelMessage(protocolMessage.name);
+        if(message instanceof ChannelMessage) {
+            ChannelMessage channelMessage = (ChannelMessage) message;
             publisherActorRef.tell(channelMessage, getSelf());
             messageBroadcasterActorRef.tell(channelMessage, getSelf());
 
-            sender().tell("Received name: " + protocolMessage.name, self());
+            sender().tell("Received message: " + channelMessage.getMessage(), self());
         } else {
             unhandled(message);
         }

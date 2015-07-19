@@ -22,11 +22,8 @@ public class SubscriberActor extends BaseActor {
     public void onReceive(Object message) throws Exception {
         System.out.println(this.getClass().getSimpleName() + " is called");
 
-        if(message instanceof String && "exit".equals(message)) {
-            obtainRedisTool().unsubscribe(ChannelName.CHANNEL.name());
-        } else {
-            RedisTool redisTool = obtainRedisTool();
-            redisTool.subscribe(messageListener, ChannelName.CHANNEL.name());
-        }
+
+        RedisTool redisTool = obtainRedisTool();
+        redisTool.subscribe(messageListener, ChannelName.CHANNEL.name());
     }
 }
