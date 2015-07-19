@@ -6,7 +6,6 @@ import redis.MessageListener;
 import redis.RedisTool;
 
 public class SubscriberActor extends BaseActor {
-    public static final String NAME = "subscriber-actor";
 
     @Inject
     private MessageListener messageListener;

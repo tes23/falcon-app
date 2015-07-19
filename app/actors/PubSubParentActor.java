@@ -9,8 +9,12 @@ import scala.Option;
 
 import javax.inject.Inject;
 
+import static actors.PubSubParentActorProtocol.ActorNamePath.*;
+
+
 public class PubSubParentActor extends BaseActor implements InjectedActorSupport{
-    public static final String NAME = "pubsub-parent-actor";
+    public static final String MESSAGE_BROADCASTER_PATH = USER_PATH + PUB_SUB_PARENT + "/" + MESSAGE_BROADCASTER;
+
     private LoggingAdapter logger = Logging.getLogger(getContext().system(), this);
 
 //    @Inject @Named(PublisherActor.NAME)
@@ -19,9 +23,12 @@ public class PubSubParentActor extends BaseActor implements InjectedActorSupport
     PubSubParentActorProtocol.PublisherFactory childPublisherFactory;
     @Inject
     PubSubParentActorProtocol.SubscriberFactory childSubscriberFactory;
+    @Inject
+    PubSubParentActorProtocol.MessageBroadcasterFactory childMessageBroadcasterFactory;
 
 //    @Inject @Named(SubscriberActor.NAME)
     private ActorRef subscriberActorRef;
+    private ActorRef messageBroadcasterActorRef;
 
     @Override
     public void preRestart(Throwable reason, Option<Object> message) throws Exception {
@@ -37,11 +44,13 @@ public class PubSubParentActor extends BaseActor implements InjectedActorSupport
     @Override
     public void preStart() throws Exception {
         super.preStart();
-        System.out.println("preStart() ");
+        System.out.println("PubSubParentActor preStart() ");
 
-        publisherActorRef = injectedChild(() -> childPublisherFactory.create(), PublisherActor.NAME);
-        subscriberActorRef = injectedChild(() -> childSubscriberFactory.create(), SubscriberActor.NAME);
+        publisherActorRef = injectedChild(() -> childPublisherFactory.create(), PUBLISHER);
+        subscriberActorRef = injectedChild(() -> childSubscriberFactory.create(), SUBSCRIBER);
+        messageBroadcasterActorRef = injectedChild(() -> childMessageBroadcasterFactory.create(), MESSAGE_BROADCASTER);
 
+        //TODO schedule at startup subscriber to make sure subscription is done before we  publish
         subscriberActorRef.tell(getSelf(), getSelf());
     }
 
@@ -51,8 +60,6 @@ public class PubSubParentActor extends BaseActor implements InjectedActorSupport
         System.out.println("postRestart()");
 //        preStart();
 //
-//        //TODO schedule at startup subscriber to make sure subscription is done before we  publish
-//        subscriberActorRef.tell(getSelf(), getSelf());
     }
 
     @Override
@@ -62,13 +69,14 @@ public class PubSubParentActor extends BaseActor implements InjectedActorSupport
 
     @Override
     public void onReceive(Object message) throws Exception {
-        logger.info("Received command" + message);
+        logger.info("Received command:" + message);
 
         if(message instanceof PubSubParentActorProtocol.Message) {
             PubSubParentActorProtocol.Message protocolMessage = (PubSubParentActorProtocol.Message) message;
 
             ChannelMessage channelMessage = new ChannelMessage(protocolMessage.name);
             publisherActorRef.tell(channelMessage, getSelf());
+            messageBroadcasterActorRef.tell(channelMessage, getSelf());
 
             sender().tell("Received name: " + protocolMessage.name, self());
         } else {
