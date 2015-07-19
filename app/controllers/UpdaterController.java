@@ -1,7 +1,6 @@
 package controllers;
 
-import actors.PubSubParentActor;
-import actors.PubSubParentActorProtocol;
+import actors.ConsumerActorProtocol;
 import actors.MessageBroadcasterActor;
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
@@ -17,12 +16,12 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.UUID;
 
-import static actors.PubSubParentActorProtocol.ActorNamePath.*;
+import static actors.ConsumerActorProtocol.ActorNamePath.*;
 
 @Singleton
 public class UpdaterController extends Controller {
 
-    @Inject @Named(PUB_SUB_PARENT)
+    @Inject @Named(CONSUMER)
     private ActorRef actorRef;
 
     public Result index() {
@@ -48,7 +47,7 @@ public class UpdaterController extends Controller {
     }
 
     public F.Promise<Result> sayhello(String name) {
-        PubSubParentActorProtocol.Message message = new PubSubParentActorProtocol.Message(name);
+        ConsumerActorProtocol.Message message = new ConsumerActorProtocol.Message(name);
 
         //TODO: here we should use tell, which means we don't want to wait for any answer
         return F.Promise.wrap(Patterns.ask(actorRef, message, 30000)).map(response -> ok((String) response));

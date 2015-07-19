@@ -9,24 +9,22 @@ import scala.Option;
 
 import javax.inject.Inject;
 
-import static actors.PubSubParentActorProtocol.ActorNamePath.*;
+import static actors.ConsumerActorProtocol.ActorNamePath.*;
 
 
-public class PubSubParentActor extends BaseActor implements InjectedActorSupport{
-    public static final String MESSAGE_BROADCASTER_PATH = USER_PATH + PUB_SUB_PARENT + "/" + MESSAGE_BROADCASTER;
+public class ConsumerActor extends BaseActor implements InjectedActorSupport{
+    public static final String MESSAGE_BROADCASTER_PATH = USER_PATH + CONSUMER + "/" + MESSAGE_BROADCASTER;
 
     private LoggingAdapter logger = Logging.getLogger(getContext().system(), this);
 
-//    @Inject @Named(PublisherActor.NAME)
-    private ActorRef publisherActorRef;
     @Inject
-    PubSubParentActorProtocol.PublisherFactory childPublisherFactory;
+    private ConsumerActorProtocol.PublisherFactory publisherFactory;
     @Inject
-    PubSubParentActorProtocol.SubscriberFactory childSubscriberFactory;
+    private ConsumerActorProtocol.SubscriberFactory subscriberFactory;
     @Inject
-    PubSubParentActorProtocol.MessageBroadcasterFactory childMessageBroadcasterFactory;
+    private ConsumerActorProtocol.MessageBroadcasterFactory messageBroadcasterFactory;
 
-//    @Inject @Named(SubscriberActor.NAME)
+    private ActorRef publisherActorRef;
     private ActorRef subscriberActorRef;
     private ActorRef messageBroadcasterActorRef;
 
@@ -44,11 +42,11 @@ public class PubSubParentActor extends BaseActor implements InjectedActorSupport
     @Override
     public void preStart() throws Exception {
         super.preStart();
-        System.out.println("PubSubParentActor preStart() ");
+        System.out.println("ConsumerActor preStart() ");
 
-        publisherActorRef = injectedChild(() -> childPublisherFactory.create(), PUBLISHER);
-        subscriberActorRef = injectedChild(() -> childSubscriberFactory.create(), SUBSCRIBER);
-        messageBroadcasterActorRef = injectedChild(() -> childMessageBroadcasterFactory.create(), MESSAGE_BROADCASTER);
+        publisherActorRef = injectedChild(() -> publisherFactory.create(), PUBLISHER);
+        subscriberActorRef = injectedChild(() -> subscriberFactory.create(), SUBSCRIBER);
+        messageBroadcasterActorRef = injectedChild(() -> messageBroadcasterFactory.create(), MESSAGE_BROADCASTER);
 
         //TODO schedule at startup subscriber to make sure subscription is done before we  publish
         subscriberActorRef.tell(getSelf(), getSelf());
@@ -71,8 +69,8 @@ public class PubSubParentActor extends BaseActor implements InjectedActorSupport
     public void onReceive(Object message) throws Exception {
         logger.info("Received command:" + message);
 
-        if(message instanceof PubSubParentActorProtocol.Message) {
-            PubSubParentActorProtocol.Message protocolMessage = (PubSubParentActorProtocol.Message) message;
+        if(message instanceof ConsumerActorProtocol.Message) {
+            ConsumerActorProtocol.Message protocolMessage = (ConsumerActorProtocol.Message) message;
 
             ChannelMessage channelMessage = new ChannelMessage(protocolMessage.name);
             publisherActorRef.tell(channelMessage, getSelf());
