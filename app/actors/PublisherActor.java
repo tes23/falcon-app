@@ -24,7 +24,8 @@ public class PublisherActor extends BaseActor {
             redisTool.publish(ChannelName.CHANNEL.name(), name);
 
 //            redisTool.subscribe(messageListener, CHANNEL);
-//            redisTool.persist(name);
+            //TODO: put it into a separate actor
+            redisTool.persist(name);
 
         } else {
             unhandled(message);

@@ -2,42 +2,41 @@ package redis;
 
 import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.pubsub.RedisPubSubConnection;
+import play.Configuration;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 @Singleton
 public class RedisToolImpl implements RedisTool {
     public static final String REDIS_HOST = "redis.host";
     public static final String REDIS_PORT = "redis.port";
-    public static final String REDIS_CONFIG = "redis.properties";
 
     private RedisConnectionPool connectionPool;
-    private Properties properties;
-    private String host;
-    private int port;
+    private Configuration configuration;
 
     @Inject
-    public RedisToolImpl(RedisConnectionPool connectionPool, Properties properties) {
+    public RedisToolImpl(RedisConnectionPool connectionPool, Configuration configuration) {
         System.out.println(">>> START RedisToolImpl >>>");
         this.connectionPool = connectionPool;
-        this.properties = properties;
-        loadConfig();
-        host = properties.getProperty(REDIS_HOST);
-        port = Integer.valueOf(properties.getProperty(REDIS_PORT));
-        initConnectionPool(connectionPool, host, port);
+        this.configuration = configuration;
+        initConnectionPool();
     }
 
-    private void initConnectionPool(RedisConnectionPool connectionPool, String host, int port) {
-        connectionPool.setHost(host);
-        connectionPool.setPort(port);
+    private void initConnectionPool() {
+        connectionPool.setHost(getHost());
+        connectionPool.setPort(getPort());
+    }
+
+    private String getHost() {
+        return configuration.getString(REDIS_HOST);
+    }
+
+    private int getPort() {
+        return configuration.getInt(REDIS_PORT);
     }
 
     @Override
@@ -75,20 +74,6 @@ public class RedisToolImpl implements RedisTool {
         map.put("message", message);
         map.put("created", "" + new Date().getTime());
         return map;
-    }
-
-    private void loadConfig() {
-        try {
-            InputStream in = RedisToolImpl.class.getResourceAsStream(REDIS_CONFIG);
-            properties.load(in);
-            in.close();
-        } catch (FileNotFoundException e) {
-            //TODO: error handling
-            e.printStackTrace();
-        } catch (IOException e) {
-            //TODO: error handling
-            e.printStackTrace();
-        }
     }
 
     @Override

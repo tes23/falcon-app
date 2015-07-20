@@ -13,13 +13,22 @@ public class MessageBroadcasterActor extends UntypedActor {
     private Map<String, WebSocket.Out<String>> clients = new HashMap<>();
 
     public static void registerClient(final String id, WebSocket.In<String> in, WebSocket.Out<String> out) {
-        ActorSelection actor = Akka.system().actorSelection(ConsumerActor.MESSAGE_BROADCASTER_PATH);
+        ActorSelection actor = selectMessageBroadcasterActor();
         actor.tell(new RegistrationMessage(id, out), null);
 
         //nothing to do when a client joins
         in.onMessage(s -> {});
 
         in.onClose(() -> actor.tell(new UnRegistrationMessage(id), null));
+    }
+
+    public static void notifyClients(String message) {
+        ActorSelection actor = selectMessageBroadcasterActor();
+        actor.tell(new ChannelMessage(message), null);
+    }
+
+    private static ActorSelection selectMessageBroadcasterActor() {
+        return Akka.system().actorSelection(ConsumerActor.MESSAGE_BROADCASTER_PATH);
     }
 
     @Override

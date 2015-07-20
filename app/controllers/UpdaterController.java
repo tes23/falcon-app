@@ -1,6 +1,5 @@
 package controllers;
 
-import actors.ConsumerActorProtocol;
 import actors.MessageBroadcasterActor;
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
@@ -10,14 +9,14 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
 import redis.ChannelMessage;
-import views.html.*;
+import views.html.index;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.UUID;
 
-import static actors.ConsumerActorProtocol.ActorNamePath.*;
+import static actors.ConsumerActorProtocol.ActorNamePath.CONSUMER;
 
 @Singleton
 public class UpdaterController extends Controller {

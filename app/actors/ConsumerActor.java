@@ -72,7 +72,7 @@ public class ConsumerActor extends BaseActor implements InjectedActorSupport{
         if(message instanceof ChannelMessage) {
             ChannelMessage channelMessage = (ChannelMessage) message;
             publisherActorRef.tell(channelMessage, getSelf());
-            messageBroadcasterActorRef.tell(channelMessage, getSelf());
+//            messageBroadcasterActorRef.tell(channelMessage, getSelf());
 
             sender().tell("Received message: " + channelMessage.getMessage(), self());
         } else {

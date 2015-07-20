@@ -1,8 +1,10 @@
 import actors.*;
 import com.google.inject.AbstractModule;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
 import play.libs.akka.AkkaGuiceSupport;
-import redis.*;
+import redis.RedisConnectionPool;
+import redis.RedisConnectionPoolImpl;
+import redis.RedisTool;
+import redis.RedisToolImpl;
 
 public class GuiceModule extends AbstractModule implements AkkaGuiceSupport {
 
