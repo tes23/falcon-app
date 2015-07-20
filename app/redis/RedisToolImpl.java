@@ -20,7 +20,6 @@ public class RedisToolImpl implements RedisTool {
 
     @Inject
     public RedisToolImpl(RedisConnectionPool connectionPool, Configuration configuration) {
-        System.out.println(">>> START RedisToolImpl >>>");
         this.connectionPool = connectionPool;
         this.configuration = configuration;
         initConnectionPool();

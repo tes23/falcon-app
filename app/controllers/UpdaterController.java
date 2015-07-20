@@ -38,7 +38,7 @@ public class UpdaterController extends Controller {
                 Duration.create(10, TimeUnit.SECONDS),
                 new Runnable() {
                     public void run() {
-                        System.out.println("ASD");
+
                     }
                 }, null
         );*/

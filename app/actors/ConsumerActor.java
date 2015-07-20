@@ -1,11 +1,10 @@
 package actors;
 
 import akka.actor.ActorRef;
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.akka.InjectedActorSupport;
 import redis.ChannelMessage;
-import scala.Option;
 
 import javax.inject.Inject;
 
@@ -13,9 +12,9 @@ import static actors.ConsumerActorProtocol.ActorNamePath.*;
 
 
 public class ConsumerActor extends BaseActor implements InjectedActorSupport{
-    public static final String MESSAGE_BROADCASTER_PATH = USER_PATH + CONSUMER + "/" + MESSAGE_BROADCASTER;
+    private final static Logger LOGGER = LoggerFactory.getLogger(ConsumerActor.class);
 
-    private LoggingAdapter logger = Logging.getLogger(getContext().system(), this);
+    public static final String MESSAGE_BROADCASTER_PATH = USER_PATH + CONSUMER + "/" + MESSAGE_BROADCASTER;
 
     @Inject
     private ConsumerActorProtocol.PersisterFactory persisterFactory;
@@ -32,20 +31,9 @@ public class ConsumerActor extends BaseActor implements InjectedActorSupport{
     private ActorRef messageBroadcasterActorRef;
 
     @Override
-    public void preRestart(Throwable reason, Option<Object> message) throws Exception {
-        super.preRestart(reason, message);
-        System.out.println("preRestart(with params)");
-//        for (ActorRef each : getContext().getChildren()) {
-//            getContext().unwatch(each);
-//            getContext().stop(each);
-//        }
-//        postStop();
-    }
-
-    @Override
     public void preStart() throws Exception {
+        LOGGER.debug("preStart()");
         super.preStart();
-        System.out.println("ConsumerActor preStart() ");
 
         persisterActorRef = injectedChild(() -> persisterFactory.create(), PERSISTER);
         publisherActorRef = injectedChild(() -> publisherFactory.create(), PUBLISHER);
@@ -53,32 +41,17 @@ public class ConsumerActor extends BaseActor implements InjectedActorSupport{
         messageBroadcasterActorRef = injectedChild(() -> messageBroadcasterFactory.create(), MESSAGE_BROADCASTER);
 
         //TODO schedule at startup subscriber to make sure subscription is done before we publish
-        //TODO schedule at startup subscriber to make sure subscription is done before we  publish
         subscriberActorRef.tell(getSelf(), getSelf());
     }
 
     @Override
-    public void postRestart(Throwable reason) throws Exception {
-        super.postRestart(reason);
-        System.out.println("postRestart()");
-//        preStart();
-//
-    }
-
-    @Override
-    public void postStop() throws Exception {
-        super.postStop();
-    }
-
-    @Override
     public void onReceive(Object message) throws Exception {
-        logger.info("Received command:" + message);
+        LOGGER.info("Received command:" + message);
 
         if(message instanceof ChannelMessage) {
             ChannelMessage channelMessage = (ChannelMessage) message;
             publisherActorRef.tell(channelMessage, getSelf());
             persisterActorRef.tell(channelMessage, getSelf());
-//            messageBroadcasterActorRef.tell(channelMessage, getSelf());
 
             sender().tell("Received message: " + channelMessage.getMessage(), self());
         } else {

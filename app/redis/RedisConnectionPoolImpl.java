@@ -16,10 +16,6 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool {
     private RedisPubSubConnection<String, String> subscribeConnection;
     private RedisPubSubConnection<String, String> publishConnection;
 
-    public RedisConnectionPoolImpl() {
-        System.out.println(">>> START RedisConnectionPoolImpl");
-    }
-
     @Override
     public RedisConnection<String, String> getPersisterConnection() {
         if (simpleConnection == null || !simpleConnection.isOpen()) {
