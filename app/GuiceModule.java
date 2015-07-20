@@ -11,6 +11,7 @@ public class GuiceModule extends AbstractModule implements AkkaGuiceSupport {
     @Override
     protected void configure() {
         bindActor(ConsumerActor.class, ConsumerActorProtocol.ActorNamePath.CONSUMER);
+        bindActorFactory(PersisterActor.class, ConsumerActorProtocol.PersisterFactory.class);
         bindActorFactory(PublisherActor.class, ConsumerActorProtocol.PublisherFactory.class);
         bindActorFactory(SubscriberActor.class, ConsumerActorProtocol.SubscriberFactory.class);
         bindActorFactory(MessageBroadcasterActor.class, ConsumerActorProtocol.MessageBroadcasterFactory.class);

@@ -18,12 +18,15 @@ public class ConsumerActor extends BaseActor implements InjectedActorSupport{
     private LoggingAdapter logger = Logging.getLogger(getContext().system(), this);
 
     @Inject
+    private ConsumerActorProtocol.PersisterFactory persisterFactory;
+    @Inject
     private ConsumerActorProtocol.PublisherFactory publisherFactory;
     @Inject
     private ConsumerActorProtocol.SubscriberFactory subscriberFactory;
     @Inject
     private ConsumerActorProtocol.MessageBroadcasterFactory messageBroadcasterFactory;
 
+    private ActorRef persisterActorRef;
     private ActorRef publisherActorRef;
     private ActorRef subscriberActorRef;
     private ActorRef messageBroadcasterActorRef;
@@ -44,10 +47,12 @@ public class ConsumerActor extends BaseActor implements InjectedActorSupport{
         super.preStart();
         System.out.println("ConsumerActor preStart() ");
 
+        persisterActorRef = injectedChild(() -> persisterFactory.create(), PERSISTER);
         publisherActorRef = injectedChild(() -> publisherFactory.create(), PUBLISHER);
         subscriberActorRef = injectedChild(() -> subscriberFactory.create(), SUBSCRIBER);
         messageBroadcasterActorRef = injectedChild(() -> messageBroadcasterFactory.create(), MESSAGE_BROADCASTER);
 
+        //TODO schedule at startup subscriber to make sure subscription is done before we publish
         //TODO schedule at startup subscriber to make sure subscription is done before we  publish
         subscriberActorRef.tell(getSelf(), getSelf());
     }
@@ -72,6 +77,7 @@ public class ConsumerActor extends BaseActor implements InjectedActorSupport{
         if(message instanceof ChannelMessage) {
             ChannelMessage channelMessage = (ChannelMessage) message;
             publisherActorRef.tell(channelMessage, getSelf());
+            persisterActorRef.tell(channelMessage, getSelf());
 //            messageBroadcasterActorRef.tell(channelMessage, getSelf());
 
             sender().tell("Received message: " + channelMessage.getMessage(), self());
