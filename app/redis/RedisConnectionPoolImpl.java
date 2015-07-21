@@ -53,9 +53,11 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool {
 
     @Override
     public void shutdownPersisterConnection() {
-        ((RedisConnection) getConnection(ConnectionName.PERSISTER)).close();
+        RedisConnection connection = (RedisConnection) getConnection(ConnectionName.PERSISTER);
+        if(connection != null) { connection.close(); }
         shutdownClient(ConnectionName.PERSISTER);
     }
+
 
     @Override
     @SuppressWarnings("unchecked")
@@ -71,7 +73,8 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool {
 
     @Override
     public void shutdownPublisherConnection() {
-        ((RedisPubSubConnection) getConnection(ConnectionName.PUBLISHER)).close();
+        RedisPubSubConnection connection = (RedisPubSubConnection) getConnection(ConnectionName.PUBLISHER);
+        if(connection != null) { connection.close(); }
         shutdownClient(ConnectionName.PUBLISHER);
     }
 
@@ -89,7 +92,8 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool {
 
     @Override
     public void shutdownSubscriberConnection() {
-        ((RedisPubSubConnection) getConnection(ConnectionName.SUBSCRIBER)).close();
+        RedisPubSubConnection connection = (RedisPubSubConnection) getConnection(ConnectionName.SUBSCRIBER);
+        if(connection != null) { connection.close(); }
         shutdownClient(ConnectionName.SUBSCRIBER);
     }
 
@@ -115,7 +119,8 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool {
     }
 
     private void shutdownClient(ConnectionName connectionName) {
-        getClient(connectionName).shutdown(0, 3, TimeUnit.SECONDS);
+        RedisClient client = getClient(connectionName);
+        if(client != null) { client.shutdown(0, 3, TimeUnit.SECONDS); }
         clientConnectionMap.remove(connectionName);
     }
 }
