@@ -9,6 +9,12 @@ public class PersisterActor extends BaseActor {
     private static final Logger LOGGER = LoggerFactory.getLogger(PersisterActor.class);
 
     @Override
+    public void postStop() throws Exception {
+        obtainRedisTool().shutdownPersisterConnection();
+        super.postStop();
+    }
+
+    @Override
     public void onReceive(Object message) throws Exception {
         LOGGER.debug("Message received");
 

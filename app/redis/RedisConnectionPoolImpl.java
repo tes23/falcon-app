@@ -5,6 +5,11 @@ import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.pubsub.RedisPubSubConnection;
 
 import javax.inject.Singleton;
+import java.io.Closeable;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class RedisConnectionPoolImpl implements RedisConnectionPool {
@@ -12,50 +17,80 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool {
     private String host;
     private int port;
 
-    private RedisConnection<String, String> simpleConnection;
-    private RedisPubSubConnection<String, String> subscribeConnection;
-    private RedisPubSubConnection<String, String> publishConnection;
+    private Map<ConnectionName, RedisClientConnection> clientConnectionMap = new Hashtable<>(3);
+
+    private enum ConnectionName {PERSISTER, PUBLISHER, SUBSCRIBER}
+
+    private static class RedisClientConnection<Connection extends Closeable> {
+        private RedisClient redisClient;
+        private Connection connection;
+
+        public RedisClientConnection(RedisClient redisClient, Connection connection) {
+            this.redisClient = redisClient;
+            this.connection = connection;
+        }
+    }
+
+    private RedisClient getClient(ConnectionName connectionName) {
+        return clientConnectionMap.containsKey(connectionName) ? clientConnectionMap.get(connectionName).redisClient : null;
+    }
+
+    private Closeable getConnection(ConnectionName connectionName) {
+        return clientConnectionMap.containsKey(connectionName) ? clientConnectionMap.get(connectionName).connection : null;
+    }
 
     @Override
+    @SuppressWarnings("unchecked")
     public RedisConnection<String, String> getPersisterConnection() {
-        if (simpleConnection == null || !simpleConnection.isOpen()) {
-            simpleConnection = instantiateRedisClient().connect();
+        RedisConnection<String, String> persisterConnection = (RedisConnection<String, String>) getConnection(ConnectionName.PERSISTER);
+        if (persisterConnection == null || !persisterConnection.isOpen()) {
+            RedisClient client = instantiateRedisClient();
+            persisterConnection = client.connect();
+            clientConnectionMap.put(ConnectionName.PERSISTER, new RedisClientConnection(client, persisterConnection));
         }
-        return simpleConnection;
+        return persisterConnection;
     }
 
     @Override
     public void shutdownPersisterConnection() {
-        simpleConnection.close();
-        //TODO: call shutdown on redisClient
+        ((RedisConnection) getConnection(ConnectionName.PERSISTER)).close();
+        shutdownClient(ConnectionName.PERSISTER);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public RedisPubSubConnection<String, String> getPublisherConnection() {
-        if (publishConnection == null || !publishConnection.isOpen()) {
-            publishConnection = instantiateRedisClient().connectPubSub();
+        RedisPubSubConnection<String, String> publisherConnection = (RedisPubSubConnection<String, String>) getConnection(ConnectionName.PUBLISHER);
+        if (publisherConnection == null || !publisherConnection.isOpen()) {
+            RedisClient client = instantiateRedisClient();
+            publisherConnection = client.connectPubSub();
+            clientConnectionMap.put(ConnectionName.PUBLISHER, new RedisClientConnection(client, publisherConnection));
         }
-        return publishConnection;
+        return publisherConnection;
     }
 
     @Override
     public void shutdownPublisherConnection() {
-        publishConnection.close();
-        //TODO: call shutdown on redisClient
+        ((RedisPubSubConnection) getConnection(ConnectionName.PUBLISHER)).close();
+        shutdownClient(ConnectionName.PUBLISHER);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public RedisPubSubConnection<String, String> getSubscriberConnection() {
-        if (subscribeConnection == null || !subscribeConnection.isOpen()) {
-            subscribeConnection = instantiateRedisClient().connectPubSub();
+        RedisPubSubConnection<String, String> subscriberConnection = (RedisPubSubConnection<String, String>) getConnection(ConnectionName.SUBSCRIBER);
+        if (subscriberConnection == null || !subscriberConnection.isOpen()) {
+            RedisClient client = instantiateRedisClient();
+            subscriberConnection = client.connectPubSub();
+            clientConnectionMap.put(ConnectionName.SUBSCRIBER, new RedisClientConnection(client, subscriberConnection));
         }
-        return subscribeConnection;
+        return subscriberConnection;
     }
 
     @Override
     public void shutdownSubscriberConnection() {
-        subscribeConnection.close();
-        //TODO: call shutdown on redisClient
+        ((RedisPubSubConnection) getConnection(ConnectionName.SUBSCRIBER)).close();
+        shutdownClient(ConnectionName.SUBSCRIBER);
     }
 
     @Override
@@ -79,4 +114,8 @@ public class RedisConnectionPoolImpl implements RedisConnectionPool {
         return new RedisClient(host, port);
     }
 
+    private void shutdownClient(ConnectionName connectionName) {
+        getClient(connectionName).shutdown(0, 3, TimeUnit.SECONDS);
+        clientConnectionMap.remove(connectionName);
+    }
 }

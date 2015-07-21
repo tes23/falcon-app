@@ -4,9 +4,9 @@ public interface RedisTool {
 
     void shutdownPersisterConnection();
 
-    void shutdownPublisherConnections();
+    void shutdownPublisherConnection();
 
-    void shutdownSubscriberConnections();
+    void shutdownSubscriberConnection();
 
     void shutdownConnections();
 

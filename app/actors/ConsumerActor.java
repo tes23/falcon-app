@@ -40,7 +40,6 @@ public class ConsumerActor extends BaseActor implements InjectedActorSupport{
         subscriberActorRef = injectedChild(() -> subscriberFactory.create(), SUBSCRIBER);
         messageBroadcasterActorRef = injectedChild(() -> messageBroadcasterFactory.create(), MESSAGE_BROADCASTER);
 
-        //TODO schedule at startup subscriber to make sure subscription is done before we publish
         subscriberActorRef.tell(getSelf(), getSelf());
     }
 

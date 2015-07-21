@@ -46,20 +46,20 @@ public class RedisToolImpl implements RedisTool {
     }
 
     @Override
-    public void shutdownPublisherConnections() {
+    public void shutdownPublisherConnection() {
         connectionPool.shutdownPublisherConnection();
     }
 
     @Override
-    public void shutdownSubscriberConnections() {
+    public void shutdownSubscriberConnection() {
         connectionPool.shutdownSubscriberConnection();
     }
 
     @Override
     public void shutdownConnections() {
         shutdownPersisterConnection();
-        shutdownPublisherConnections();
-        shutdownSubscriberConnections();
+        shutdownPublisherConnection();
+        shutdownSubscriberConnection();
     }
 
     @Override

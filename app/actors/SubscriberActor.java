@@ -17,7 +17,7 @@ public class SubscriberActor extends BaseActor {
     @Override
     public void postStop() throws Exception {
         obtainRedisTool().unsubscribe(CHANNEL.name());
-        //TODO: clean up connection
+        obtainRedisTool().shutdownSubscriberConnection();
         super.postStop();
     }
 

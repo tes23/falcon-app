@@ -10,7 +10,7 @@ public class MessageListener extends RedisPubSubAdapter<String, String> {
 
     @Override
     public void message(String channel, String message) {
-        LOGGER.debug("Message received from channel " + channel + "with message " + message);
+        LOGGER.debug("Message received from channel " + channel + " with message " + message);
 
         MessageBroadcasterActor.notifyClients(message);
     }

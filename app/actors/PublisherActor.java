@@ -12,8 +12,8 @@ public class PublisherActor extends BaseActor {
 
     @Override
     public void postStop() throws Exception {
+        obtainRedisTool().shutdownPublisherConnection();
         super.postStop();
-        //TODO: clean up connection
     }
 
     @Override
