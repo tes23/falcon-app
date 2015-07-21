@@ -5,14 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.RedisTool;
 
-import static actors.ConsumerActorProtocol.ChannelName.CHANNEL;
-
-public class PublisherActor extends BaseActor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PublisherActor.class);
+public class PersisterActor extends BaseActor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PersisterActor.class);
 
     @Override
     public void postStop() throws Exception {
-        obtainRedisTool().shutdownPublisherConnection();
+        obtainRedisTool().shutdownPersisterConnection();
         super.postStop();
     }
 
@@ -24,11 +22,7 @@ public class PublisherActor extends BaseActor {
             final String msg = ((ChannelMessage) message).getMessage();
 
             RedisTool redisTool = obtainRedisTool();
-            redisTool.publish(CHANNEL.name(), msg);
-        } else {
-            unhandled(message);
+            redisTool.persist(msg);
         }
     }
-
-
 }

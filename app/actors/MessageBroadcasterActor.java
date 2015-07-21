@@ -2,18 +2,22 @@ package actors;
 
 import akka.actor.ActorSelection;
 import akka.actor.UntypedActor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Akka;
 import play.mvc.WebSocket;
-import redis.ChannelMessage;
+import models.ChannelMessage;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class MessageBroadcasterActor extends UntypedActor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageBroadcasterActor.class);
+
     private Map<String, WebSocket.Out<String>> clients = new HashMap<>();
 
     public static void registerClient(final String id, WebSocket.In<String> in, WebSocket.Out<String> out) {
-        ActorSelection actor = Akka.system().actorSelection(ConsumerActor.MESSAGE_BROADCASTER_PATH);
+        ActorSelection actor = selectMessageBroadcasterActor();
         actor.tell(new RegistrationMessage(id, out), null);
 
         //nothing to do when a client joins
@@ -22,20 +26,32 @@ public class MessageBroadcasterActor extends UntypedActor {
         in.onClose(() -> actor.tell(new UnRegistrationMessage(id), null));
     }
 
+    public static void notifyClients(String message) {
+        ActorSelection actor = selectMessageBroadcasterActor();
+        actor.tell(new ChannelMessage(message), null);
+    }
+
+    private static ActorSelection selectMessageBroadcasterActor() {
+        return Akka.system().actorSelection(ConsumerActor.MESSAGE_BROADCASTER_PATH);
+    }
+
     @Override
     public void onReceive(Object message) throws Exception {
         if (message instanceof RegistrationMessage) {
             RegistrationMessage regMessage  = (RegistrationMessage) message;
+
             clients.put(regMessage.id, regMessage.channel);
-            System.out.println("New client is arrived with id:" + ((RegistrationMessage) message).id + ", available clients:" + clients.size());
+            LOGGER.debug("New client is arrived with id:" + regMessage.id + ", available clients:" + clients.size());
         } else if(message instanceof ChannelMessage) {
             ChannelMessage channelMessage = (ChannelMessage) message;
+
             clients.forEach((id, channel) -> channel.write(channelMessage.getMessage()));
-            System.out.println("Message sent to clients:" + channelMessage.getMessage() + ", available clients:" + clients.size());
+            LOGGER.debug("Message sent to clients:" + channelMessage.getMessage() + ", available clients:" + clients.size());
         } else if(message instanceof UnRegistrationMessage) {
             UnRegistrationMessage unRegMessage = (UnRegistrationMessage) message;
+
             clients.remove(unRegMessage.id);
-            System.out.println("Client quits with id:" + ((UnRegistrationMessage) message).id + ", available clients:" + clients.size());
+            LOGGER.debug("Client quits with id:" + unRegMessage.id + ", available clients:" + clients.size());
         }
     }
 

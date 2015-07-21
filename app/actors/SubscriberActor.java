@@ -1,29 +1,31 @@
 package actors;
 
 import com.google.inject.Inject;
-import constants.ChannelName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.MessageListener;
 import redis.RedisTool;
 
+import static actors.ConsumerActorProtocol.ChannelName.CHANNEL;
+
 public class SubscriberActor extends BaseActor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SubscriberActor.class);
 
     @Inject
     private MessageListener messageListener;
 
     @Override
     public void postStop() throws Exception {
-        obtainRedisTool().unsubscribe(ChannelName.CHANNEL.name());
-        //TODO: clean up connection
+        obtainRedisTool().unsubscribe(CHANNEL.name());
+        obtainRedisTool().shutdownSubscriberConnection();
         super.postStop();
-        System.out.println("postStop() on SubscriberActor");
     }
 
     @Override
     public void onReceive(Object message) throws Exception {
-        System.out.println(this.getClass().getSimpleName() + " is called");
-
+        LOGGER.debug("Message received");
 
         RedisTool redisTool = obtainRedisTool();
-        redisTool.subscribe(messageListener, ChannelName.CHANNEL.name());
+        redisTool.subscribe(messageListener, CHANNEL.name());
     }
 }
