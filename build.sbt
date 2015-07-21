@@ -2,11 +2,13 @@ name := "falcon-app"
 
 version := "1.0-SNAPSHOT"
 
+import com.typesafe.sbt.packager.archetypes.ServerLoader
+
 //lazy val common = (project in file("common")).enablePlugins(PlayJava)
 //lazy val redisClient = (project in file("redisClient")).enablePlugins(PlayJava)
 
 lazy val root = (project in file("."))
-  .enablePlugins(PlayJava)
+  .enablePlugins(PlayJava, JavaServerAppPackaging)
 //  .aggregate(redisClient)
 //  .dependsOn(redisClient)
 
@@ -29,6 +31,14 @@ libraryDependencies ++= Seq(
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
+
+serverLoading in Debian := ServerLoader.Upstart
+
+maintainer in Linux := "Akos Csikor <akos.csikor@cyber-design.info>"
+
+packageSummary in Linux := "Falcon App"
+
+packageDescription := "Simple scalable application"
 
 //lazy val redisClient = project
 //lazy val common = project
