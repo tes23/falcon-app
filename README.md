@@ -16,7 +16,7 @@ Just a sample for JSON:
   "message": {
     "currentDate": "1436440431",
     "clientBrowser": "Mozilla",
-    "data": "This is the interesting parts"
+    "data": "This is the interesting part"
   }
 }
 ```
