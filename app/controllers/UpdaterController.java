@@ -8,7 +8,7 @@ import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
-import redis.ChannelMessage;
+import models.ChannelMessage;
 import views.html.index;
 
 import javax.inject.Inject;

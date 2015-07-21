@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Akka;
 import play.mvc.WebSocket;
-import redis.ChannelMessage;
+import models.ChannelMessage;
 
 import java.util.HashMap;
 import java.util.Map;

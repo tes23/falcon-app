@@ -1,8 +1,8 @@
 package actors;
 
+import models.ChannelMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.ChannelMessage;
 import redis.RedisTool;
 
 public class PersisterActor extends BaseActor {

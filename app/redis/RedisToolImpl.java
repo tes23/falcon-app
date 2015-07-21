@@ -12,6 +12,8 @@ import java.util.Map;
 
 @Singleton
 public class RedisToolImpl implements RedisTool {
+    private static final String MESSAGE_KEY_PREFIX = "message:";
+    private static final String MESSAGE_SEQ_NEXT_ID = "next_msg_id";
     public static final String REDIS_HOST = "redis.host";
     public static final String REDIS_PORT = "redis.port";
 
@@ -62,17 +64,8 @@ public class RedisToolImpl implements RedisTool {
 
     @Override
     public void persist(String message) {
-        Long nextId = getPersisterConnection().incr("next_msg_id");
-        //TODO: remove createMessage method
-        getPersisterConnection().hmset("message:" + nextId, createMessage(message));
-    }
-
-    //TODO: pass Message object instead of text
-    private Map<String, String> createMessage(String message) {
-        Map<String, String> map = new HashMap<>(1);
-        map.put("message", message);
-        map.put("created", "" + new Date().getTime());
-        return map;
+        Long nextId = getPersisterConnection().incr(MESSAGE_SEQ_NEXT_ID);
+        getPersisterConnection().hmset(MESSAGE_KEY_PREFIX + nextId, createMessage(message));
     }
 
     @Override
@@ -93,6 +86,13 @@ public class RedisToolImpl implements RedisTool {
 
     private RedisConnection<String, String> getPersisterConnection() {
         return connectionPool.getPersisterConnection();
+    }
+
+    private Map<String, String> createMessage(String message) {
+        Map<String, String> map = new HashMap<>(1);
+        map.put("message", message);
+        map.put("created", "" + new Date().getTime());
+        return map;
     }
 
     private RedisPubSubConnection<String, String> getSubscriberConnection() {

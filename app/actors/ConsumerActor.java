@@ -4,7 +4,7 @@ import akka.actor.ActorRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.akka.InjectedActorSupport;
-import redis.ChannelMessage;
+import models.ChannelMessage;
 
 import javax.inject.Inject;
 

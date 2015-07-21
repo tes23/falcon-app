@@ -1,4 +1,4 @@
-package redis;
+package models;
 
 public class ChannelMessage {
     private String message;

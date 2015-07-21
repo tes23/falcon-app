@@ -1,10 +1,11 @@
 package actors;
 
-import constants.ChannelName;
+import models.ChannelMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.ChannelMessage;
 import redis.RedisTool;
+
+import static actors.ConsumerActorProtocol.ChannelName.CHANNEL;
 
 public class PublisherActor extends BaseActor {
     private static final Logger LOGGER = LoggerFactory.getLogger(PublisherActor.class);
@@ -23,7 +24,7 @@ public class PublisherActor extends BaseActor {
             final String msg = ((ChannelMessage) message).getMessage();
 
             RedisTool redisTool = obtainRedisTool();
-            redisTool.publish(ChannelName.CHANNEL.name(), msg);
+            redisTool.publish(CHANNEL.name(), msg);
         } else {
             unhandled(message);
         }
